@@ -4,12 +4,14 @@ LABEL org.opencontainers.image.source="https://github.com/rrbanda/skill-builder"
 
 ARG RELEASE_VERSION="main"
 
+RUN useradd -m -u 1001 appuser
+
 WORKDIR /app
 
-COPY pyproject.toml uv.lock ./
+COPY --chown=1001:1001 pyproject.toml uv.lock ./
 RUN uv sync --no-cache --locked --link-mode copy --no-install-project
 
-COPY . .
+COPY --chown=1001:1001 . .
 RUN uv sync --no-cache --locked --link-mode copy
 
 ENV PRODUCTION_MODE=True \
@@ -18,14 +20,11 @@ ENV PRODUCTION_MODE=True \
     SKILL_BUILDER_PORT=8000 \
     SKILL_BUILDER_PROTOCOL=http \
     SKILL_BUILDER_MODEL=openai/gemini/models/gemini-2.5-pro \
+    OPENAI_API_BASE=https://llamastack-llamastack.apps.ocp.v7hjl.sandbox2288.opentlc.com/v1 \
     OPENAI_API_KEY=no-key-needed
 
-RUN chown -R 1001:1001 /app
 USER 1001
 
 EXPOSE 8000
-
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/.well-known/agent-card.json')" || exit 1
 
 CMD ["uv", "run", "--no-sync", "uvicorn", "app.server:app", "--host", "0.0.0.0", "--port", "8000"]
