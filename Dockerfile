@@ -1,5 +1,7 @@
 FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
 
+LABEL org.opencontainers.image.source="https://github.com/rrbanda/skill-builder"
+
 ARG RELEASE_VERSION="main"
 
 WORKDIR /app
