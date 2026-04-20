@@ -12,13 +12,19 @@ from pathlib import Path
 
 _SKILLS_DIR = Path(__file__).parent / "skills"
 
+_LLAMASTACK_DEFAULT = (
+    "https://llamastack-llamastack.apps.ocp.v7hjl.sandbox2288.opentlc.com/v1"
+)
+
 
 @dataclass(frozen=True, slots=True)
 class AgentConfig:
     """Immutable agent configuration."""
 
     model: str = field(
-        default_factory=lambda: os.getenv("SKILL_BUILDER_MODEL", "gemini-2.5-pro")
+        default_factory=lambda: os.getenv(
+            "SKILL_BUILDER_MODEL", "openai/gemini/models/gemini-2.5-pro"
+        )
     )
     agent_name: str = field(
         default_factory=lambda: os.getenv("SKILL_BUILDER_AGENT_NAME", "skill_builder_agent")
@@ -35,6 +41,9 @@ class AgentConfig:
     )
     skills_dir: Path = field(
         default_factory=lambda: Path(os.getenv("SKILL_BUILDER_SKILLS_DIR", str(_SKILLS_DIR)))
+    )
+    llm_base_url: str = field(
+        default_factory=lambda: os.getenv("OPENAI_API_BASE", _LLAMASTACK_DEFAULT)
     )
 
 

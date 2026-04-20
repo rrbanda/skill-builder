@@ -14,6 +14,8 @@ generates the output, then loads the quality checklist to self-review.
 
 from __future__ import annotations
 
+import os
+
 from google.adk import Agent
 from google.adk.tools.skill_toolset import SkillToolset
 
@@ -79,9 +81,22 @@ can copy it directly. Include:
 """
 
 
+def _configure_llm_backend(config) -> None:
+    """Set environment variables for the LLM backend.
+
+    When using an OpenAI-compatible endpoint (like LlamaStack), LiteLLM
+    needs OPENAI_API_BASE and OPENAI_API_KEY to be set. ADK routes through
+    LiteLLM when the model string starts with 'openai/'.
+    """
+    if config.model.startswith("openai/"):
+        os.environ.setdefault("OPENAI_API_BASE", config.llm_base_url)
+        os.environ.setdefault("OPENAI_API_KEY", "no-key-needed")
+
+
 def build_agent() -> Agent:
     """Construct the skill-builder agent with all skills wired in."""
     config = load_agent_config()
+    _configure_llm_backend(config)
     skills = build_all_skills(config.skills_dir)
 
     skill_toolset = SkillToolset(skills=skills)
